@@ -1,0 +1,32 @@
+{
+  "name": "homebridge-homey-socket",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=12.0.0",
+    "homebridge": ">=0.4.33"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "socket.io",
+    "homebridge"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meg768/homebridge-homey-socket.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/meg768/homebridge-homey-socket/issues"
+  },
+  "homepage": "https://github.com/meg768/homebridge-homey-socket#readme",
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "socket.io-client": "^4.4.1"
+  }
+}
