@@ -2,7 +2,7 @@ var {Service, Characteristic} = require('../homebridge.js')
 var Accessory = require('../accessory.js');
 
 
-module.exports = class Sensor extends Accessory {
+module.exports = class extends Accessory {
 
     constructor(options) {
 

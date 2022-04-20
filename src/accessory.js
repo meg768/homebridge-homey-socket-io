@@ -1,6 +1,6 @@
 var {API, Service, Characteristic} = require('./homebridge.js');
 var Events = require('events');
-
+var Timer = require('yow/timer');
 
 module.exports = class extends Events  {
 
@@ -31,7 +31,20 @@ module.exports = class extends Events  {
 
         this.addService(new Service.AccessoryInformation()); 
 		this.updateCharacteristicValue(Service.AccessoryInformation, Characteristic.FirmwareRevision, "1.0");
+		this.updateCharacteristicValue(Service.AccessoryInformation, Characteristic.Model, this.device.driverId);
+		this.updateCharacteristicValue(Service.AccessoryInformation, Characteristic.Manufacturer, this.device.driverUri);
+		this.updateCharacteristicValue(Service.AccessoryInformation, Characteristic.SerialNumber, this.device.id);
 
+
+		try {
+			this.updateCharacteristicValue(Service.AccessoryInformation, Characteristic.Manufacturer, this.device.settings['zb_manufacturer_name']);
+			this.updateCharacteristicValue(Service.AccessoryInformation, Characteristic.Model, this.device.settings['zb_product_id']);
+		}
+		catch(error) {
+		}
+
+
+		
 	}
 
 	addService(service) {
@@ -131,22 +144,18 @@ module.exports = class extends Events  {
 
 		if (capability.setable) {
 			characteristic.on('set', (value, callback) => {
-				onoff = value;
-				this.debug(`Emitting ${deviceCapabilityID} ${value}.`);
-				this.socket.emit(deviceCapabilityID, value);
-				callback();
+				this.socket.emit(deviceCapabilityID, value, () => {
+					onoff = value;
+					callback();	
+				});
 			});	
 		}
 
 
 		this.socket.on(deviceCapabilityID, (value) => {
-			if (value != undefined) {
-				value = value == true;
-				onoff = value;
-				this.debug(`Updating ${this.name} ON/OFF to ${value}.`);
-				characteristic.updateValue(value);		
-			}
-
+			onoff = value;
+			this.debug(`Updating ${this.name} onoff to ${onoff}.`);
+			characteristic.updateValue(onoff);
 		});
 	}
 
@@ -171,22 +180,16 @@ module.exports = class extends Events  {
 
 		if (capability.setable) {
 			characteristic.on('set', (value, callback) => {
-
-				currentAmbientLightLevel = value;
-				
-				this.debug(`Emitting ${deviceCapabilityID} ${value}.`);
-				this.socket.emit(deviceCapabilityID, value);
-	
-				callback();
+				this.socket.emit(deviceCapabilityID, value, () => {
+					deviceCapabilityID = value;
+					callback();
+				});
 			});	
 		}
 		
 		this.socket.on(deviceCapabilityID, (value) => {
-			if (value != undefined) {
-				this.debug(`Updating ${this.name} light level to ${value}.`);
-				characteristic.updateValue(currentAmbientLightLevel = value);		
-			}
-
+			this.debug(`Updating ${this.name} light level to ${value}.`);
+			characteristic.updateValue(currentAmbientLightLevel = value);		
 		});	
 	}
 
@@ -200,8 +203,7 @@ module.exports = class extends Events  {
 
 		let characteristic = this.getService(service).getCharacteristic(Characteristic.Brightness);
 		let deviceCapabilityID = `${this.device.id}/${capability.id}`;
-
-		this.brightness = capability.value;
+		let brightness = capability.value;
 
 		let value = capability.value;
 		value = (value - capability.min) / (capability.max - capability.min);
@@ -210,7 +212,7 @@ module.exports = class extends Events  {
 
 		if (capability.getable) {
 			characteristic.on('get', (callback) => {
-				let value = this.brightness;
+				let value = brightness;
 	
 				value = (value - capability.min) / (capability.max - capability.min);
 				value = value * (characteristic.props.maxValue - characteristic.props.minValue) + characteristic.props.minValue;
@@ -225,79 +227,81 @@ module.exports = class extends Events  {
 				value = (value - characteristic.props.minValue) / (characteristic.props.maxValue - characteristic.props.minValue);
 				value = value * (capability.max - capability.min) + capability.min;
 	
-				this.brightness = value;
-				
-				this.debug(`Emitting ${deviceCapabilityID} ${value}.`);
-				this.socket.emit(deviceCapabilityID, value);
-	
-				callback();
+				this.socket.emit(deviceCapabilityID, value, () => {
+					brightness = value;
+					callback();
+				});
 			});	
 		}
 		
 		this.socket.on(deviceCapabilityID, (value) => {
-			if (value != undefined) {
-				this.brightness = value;
 
-				value = (value - capability.min) / (capability.max - capability.min);
-				value = value * (characteristic.props.maxValue - characteristic.props.minValue) + characteristic.props.minValue;
-	
-				this.debug(`Updating ${this.name} brightness to ${value}.`);
-				characteristic.updateValue(value);		
-			}
+			value = (value - capability.min) / (capability.max - capability.min);
+			value = value * (characteristic.props.maxValue - characteristic.props.minValue) + characteristic.props.minValue;
+
+			brightness = value;
+
+			this.debug(`Updating ${this.name} brightness to ${brightness}.`);
+			characteristic.updateValue(brightness);		
 
 		});	
 	}
 
-/*
+
+
 	enableColorTemperature(service) {
+		let capabilityID = 'light_temperature';
+		let capability = this.device.capabilitiesObj[capabilityID];
 
-		var {get:getTopic, set:setTopic, minValue = 0, maxValue = 100} = this.config['color-temperature'] || {};
+		if (capability == undefined)
+			return;
 
-		if (getTopic) {
-			var characteristic = this.getService(service).getCharacteristic(Characteristic.ColorTemperature);
+		let characteristic = this.getService(service).getCharacteristic(Characteristic.ColorTemperature);
+		let deviceCapabilityID = `${this.device.id}/${capability.id}`;
+		let colorTemperature = capability.value;
 
-			this.colorTemperature = characteristic.value;
+		let value = capability.value;
+		value = (value - capability.min) / (capability.max - capability.min);
+		value = value * (characteristic.props.maxValue - characteristic.props.minValue) + characteristic.props.minValue;
+		characteristic.updateValue(value);
+
+		if (capability.getable) {
+			characteristic.on('get', (callback) => {
+				let value = colorTemperature;
 	
-			var getter = async () => {
-				return this.colorTemperature;
-			}
-	
-			var setter = async (value) => {
-				try {
-					this.log(`Setting color temperature to ${value}`);
-					this.colorTemperature = value;
-
-					// Convert to factor (0-1)
-					value = (value - characteristic.props.minValue) / (characteristic.props.maxValue - characteristic.props.minValue);
-
-					// Convert to mqtt value
-					value = value * (maxValue - minValue) + minValue;
-
-					this.platform.publish(setTopic, JSON.stringify(value));
-		
-				}
-				catch (error) {
-					this.log(error);
-				}
-		
-			};
-	
-			this.enableCharacteristic(service, Characteristic.ColorTemperature, getter, setter);		
-	
-			this.on(getTopic, (value) => {
-				value = (value - minValue) / (maxValue - minValue);
+				value = (value - capability.min) / (capability.max - capability.min);
 				value = value * (characteristic.props.maxValue - characteristic.props.minValue) + characteristic.props.minValue;
 	
-				this.colorTemperature = value;
+				callback(null, value);
+			});	
+		}
 
-				this.debug(`ColorTemperature:${getTopic}:${this.colorTemperature}`);
-				this.updateCharacteristicValue(service, Characteristic.ColorTemperature, this.colorTemperature);	
-			});				
+		if (capability.setable) {
+			characteristic.on('set', (value, callback) => {
 
-			this.platform.subscribe(getTopic);
-		}	
+				value = (value - characteristic.props.minValue) / (characteristic.props.maxValue - characteristic.props.minValue);
+				value = value * (capability.max - capability.min) + capability.min;
+	
+				this.socket.emit(deviceCapabilityID, value, () => {
+					colorTemperature = value;
+					callback();
+				});
+			});	
+		}
+		
+		this.socket.on(deviceCapabilityID, (value) => {
+
+			colorTemperature = value;
+
+			value = (value - capability.min) / (capability.max - capability.min);
+			value = value * (characteristic.props.maxValue - characteristic.props.minValue) + characteristic.props.minValue;
+
+			this.debug(`Updating ${this.name} color temperature to ${value}.`);
+			characteristic.updateValue(value);		
+
+		});	
 	}
-*/
+
 
 
 	enableCurrentTemperature(service) {
@@ -309,25 +313,21 @@ module.exports = class extends Events  {
 		
 		let characteristic = this.getService(service).getCharacteristic(Characteristic.CurrentTemperature);
 		let deviceCapabilityID = `${this.device.id}/${capability.id}`;
+		let currentTemperature = capability.value;
 
-		this.currentTemperature = capability.value;
-		characteristic.updateValue(this.currentTemperature);		
+		characteristic.updateValue(currentTemperature);		
 
 		if (characteristic.getable) {
 			characteristic.on('get', (callback) => {
-				this.debug(`TEMP is ${this.currentTemperature}`);
-				callback(null, this.currentTemperature);
+				callback(null, currentTemperature);
             });
 		}
 
 		this.socket.on(deviceCapabilityID, (value) => {
-			if (value != undefined) {
-				this.currentTemperature = value;
+			currentTemperature = value;
 
-				this.debug(`Updating ${this.name} temperature to ${value}.`);
-				characteristic.updateValue(value);		
-			}
-
+			this.debug(`Updating ${this.name} temperature to ${currentTemperature}.`);
+			characteristic.updateValue(currentTemperature);
 		});			
 
 	}
@@ -343,33 +343,30 @@ module.exports = class extends Events  {
 
 		let characteristic = this.getService(service).getCharacteristic(Characteristic.MotionDetected);
 		let deviceCapabilityID = `${this.device.id}/${capability.id}`;
+		let motionDetected = capability.value;
 
-		this.motionDetected = capability.value;
+		characteristic.updateValue(motionDetected);		
 
 		if (capability.getable) {
 			characteristic.on('get', (callback) => {
-				callback(null, this.motionDetected);
+				callback(null, motionDetected);
 			});
 		}
 
 		if (capability.setable) {
 			characteristic.on('set', (value, callback) => {
-				this.motionDetected = value;
-				this.debug(`Emitting ${deviceCapabilityID} ${value}.`);
-				this.socket.emit(deviceCapabilityID, value);
-				callback();
+				this.socket.emit(deviceCapabilityID, value, () => {
+					motionDetected = value;
+					callback();
+				});
 			});	
 		}
 
 
 		this.socket.on(deviceCapabilityID, (value) => {
-			if (value != undefined) {
-				value = value == true;
-				this.motionDetected = value;
-				this.debug(`Updating ${this.name} motion to ${value}.`);
-				characteristic.updateValue(value);		
-			}
-
+			motionDetected = value;
+			this.debug(`Updating ${this.name} motion to ${motionDetected}.`);
+			characteristic.updateValue(motionDetected);	
 		});
 	}
 

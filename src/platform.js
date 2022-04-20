@@ -23,11 +23,10 @@ module.exports = class Platform {
 
 	createAccessories(devices) {
 		let Accessories = {
-			'socket': require('./accessories/switch.js'),
-			'light': require('./accessories/lightbulb.js'),
-			'sensor': require('./accessories/sensor.js'),
-			'Xoutlet': require('./accessories/outlet.js'),
-			'Xtemperature-sensor': require('./accessories/temperature-sensor.js')
+			'socket': require('./accessories/socket.js'),
+			'light': require('./accessories/light.js'),
+			'tv': require('./accessories/tv.js'),
+			'sensor': require('./accessories/sensor.js')
 		}
 
         let accessories = [];
@@ -44,6 +43,8 @@ module.exports = class Platform {
 			}
 	
 		}
+
+		this.debug(JSON.stringify(devices, null, '  '));
 
 		return accessories;
 
