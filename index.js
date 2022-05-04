@@ -12,6 +12,6 @@ module.exports = function(api) {
     Homebridge.PlatformAccessory = api.platformAccessory;
     Homebridge.API = api;
 
-    api.registerPlatform('homebridge-homey-socket', 'Homey Socket', require('./src/platform.js'));
+    api.registerPlatform('homebridge-homey-socket.io', 'Homey Socket-IO', require('./src/platform.js'));
 };
 

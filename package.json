@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-homey-socket",
+  "name": "homebridge-homey-socket-io",
   "version": "1.0.9",
   "description": "",
   "main": "index.js",
@@ -17,14 +17,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/meg768/homebridge-homey-socket.git"
+    "url": "git+https://github.com/meg768/homebridge-homey-socket-io.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/meg768/homebridge-homey-socket/issues"
+    "url": "https://github.com/meg768/homebridge-homey-socket-io/issues"
   },
-  "homepage": "https://github.com/meg768/homebridge-homey-socket#readme",
+  "homepage": "https://github.com/meg768/homebridge-homey-socket-io#readme",
   "dependencies": {
     "dotenv": "^16.0.0",
     "socket.io-client": "^4.4.1",

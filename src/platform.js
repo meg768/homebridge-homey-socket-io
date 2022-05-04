@@ -11,7 +11,9 @@ module.exports = class Platform {
         this.log = log;
         this.homebridge = homebridge;
         this.debug = config.debug ? log : () => {};
-		this.socket = io("http://192.168.86.37:3987");
+
+		this.debug(`Connecting to socket ${this.config.socket}...`);
+		this.socket = io(this.config.socket);
     
 		this.homebridge.on('didFinishLaunching', () => {
             this.debug('Finished launching.');
@@ -43,13 +45,14 @@ module.exports = class Platform {
 			}
 			
 			if (Accessory != undefined) {
+				this.debug(`Adding device ${device.zoneName}/${device.name}.`);
 				accessories.push(new Accessory({device:device, platform:this}));
 
 			}
 	
 		}
 
-		this.debug(JSON.stringify(devices, null, '  '));
+		// this.debug(JSON.stringify(devices, null, '  '));
 
 		return accessories;
 
