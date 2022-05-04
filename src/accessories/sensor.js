@@ -20,6 +20,15 @@ module.exports = class extends Accessory {
 			this.addService(new Service.LightSensor(this.name, this.UUID));
 			this.enableLightSensor(Service.LightSensor);		
 		}
+
+
+		/*
+		if (this.device.capabilitiesObj['alarm_generic']) {
+			this.addService(new Service.Doorbell(this.name, this.UUID));
+			this.enableProgrammableSwitchEvent(Service.Doorbell);		
+
+		}
+		*/
     }
 
 

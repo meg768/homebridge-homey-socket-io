@@ -203,31 +203,28 @@ module.exports = class extends Events  {
 
 		let characteristic = this.getService(service).getCharacteristic(Characteristic.Brightness);
 		let deviceCapabilityID = `${this.device.id}/${capability.id}`;
-		let brightness = capability.value;
 
 		let value = capability.value;
 		value = (value - capability.min) / (capability.max - capability.min);
 		value = value * (characteristic.props.maxValue - characteristic.props.minValue) + characteristic.props.minValue;
 		characteristic.updateValue(value);
 
+		let brightness = value;
+
 		if (capability.getable) {
 			characteristic.on('get', (callback) => {
-				let value = brightness;
-	
-				value = (value - capability.min) / (capability.max - capability.min);
-				value = value * (characteristic.props.maxValue - characteristic.props.minValue) + characteristic.props.minValue;
-	
-				callback(null, value);
+				callback(null, brightness);
 			});	
 		}
 
 		if (capability.setable) {
 			characteristic.on('set', (value, callback) => {
 
-				value = (value - characteristic.props.minValue) / (characteristic.props.maxValue - characteristic.props.minValue);
-				value = value * (capability.max - capability.min) + capability.min;
+				let convertedValue = value;
+				convertedValue = (convertedValue - characteristic.props.minValue) / (characteristic.props.maxValue - characteristic.props.minValue);
+				convertedValue = convertedValue * (capability.max - capability.min) + capability.min;
 	
-				this.socket.emit(deviceCapabilityID, value, () => {
+				this.socket.emit(deviceCapabilityID, convertedValue, () => {
 					brightness = value;
 					callback();
 				});
@@ -235,6 +232,10 @@ module.exports = class extends Events  {
 		}
 		
 		this.socket.on(deviceCapabilityID, (value) => {
+
+			// Hmm. Values min/max special case due to on/off
+			if (value == capability.min || value == capability.max)
+				return;
 
 			value = (value - capability.min) / (capability.max - capability.min);
 			value = value * (characteristic.props.maxValue - characteristic.props.minValue) + characteristic.props.minValue;
@@ -372,5 +373,32 @@ module.exports = class extends Events  {
 
 
 
+	enableProgrammableSwitchEvent(service) {
+
+		this.log('-------------------------------');
+
+		let capabilityID = 'alarm_generic';
+		let capability = this.device.capabilitiesObj[capabilityID];
+
+		if (capability == undefined)
+			return;
+
+
+
+		let characteristic = this.getService(service).getCharacteristic(Characteristic.ProgrammableSwitchEvent);
+		let deviceCapabilityID = `${this.device.id}/${capability.id}`;
+		let capabilityValue = capability.value;
+
+		characteristic.setProps({ maxValue: 0 });
+		this.log(`${capabilityValue}!!!!!!!!`);
+//		characteristic.updateValue(capabilityValue ? 1 : 0);		
+
+
+		this.socket.on(deviceCapabilityID, (value) => {
+			capabilityValue = value
+			this.debug(`Updating ${this.name} ProgrammableSwitchEvent to ${capabilityValue}.`);
+//			characteristic.updateValue(capabilityValue ? 1 : 0);		
+		});
+	}
 };
 

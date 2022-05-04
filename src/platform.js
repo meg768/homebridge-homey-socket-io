@@ -36,6 +36,11 @@ module.exports = class Platform {
 		for (let key in devices) {
 			let device = devices[key];
 			let Accessory = Accessories[device.class];
+
+			if (this.config.exclude && this.config.exclude.indexOf(device.id) >= 0) {
+				this.debug(`Excluding device ${device.zoneName}/${device.name}.`);
+				continue;
+			}
 			
 			if (Accessory != undefined) {
 				accessories.push(new Accessory({device:device, platform:this}));
