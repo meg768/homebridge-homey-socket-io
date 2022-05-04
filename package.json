@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "git-commit": "git add -A && git push && git commit -m '-' && git push",
-    "npm-publish": "npm version patch && npm publish"
+    "npm-publish": "npm version patch && npm publish",
+	"goto-github": "open https://github.com/meg768/homebridge-homey-socket-io.git",
+	"goto-npm": "open https://www.npmjs.com/package/homebridge-homey-socket-io"
   },
   "engines": {
     "node": ">=12.0.0",
