@@ -1,12 +1,12 @@
 {
   "name": "homebridge-homey-socket-io",
-  "version": "1.0.10",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-	"git-commit": "git add -A && git commit -m '-' && git push",
-	"npm-publish": "npm publish"
+    "git-commit": "git add -A && git commit -m '-' && git push",
+    "npm-publish": "npm publish"
   },
   "engines": {
     "node": ">=12.0.0",
