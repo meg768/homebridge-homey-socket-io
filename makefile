@@ -1,5 +1,5 @@
 GITHUB_USER=meg768
-GITHUB_PROJECT=homebridge-homey-socket
+GITHUB_PROJECT=homebridge-homey-socket-io
 GITHUB_URL=https://github.com/$(GITHUB_USER)/$(GITHUB_PROJECT)
 
 all:

@@ -1,1 +1,1 @@
-# homebridge-homey-socket
+# homebridge-homey-socket-io
