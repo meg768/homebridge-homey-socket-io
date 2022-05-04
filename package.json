@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "git-commit": "git add -A && git commit -m '-' && git push",
-    "npm-publish": "npm version patch && npm publish && npm run git-commit"
+    "npm-publish": "npm version patch && npm publish"
   },
   "engines": {
     "node": ">=12.0.0",
