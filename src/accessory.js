@@ -144,6 +144,7 @@ module.exports = class extends Events  {
 
 		if (capability.setable) {
 			characteristic.on('set', (value, callback) => {
+                this.debug(`Setting device ${this.name}/${capabilityID} to ${value} (${deviceCapabilityID}).`);
 				this.socket.emit(deviceCapabilityID, value, () => {
 					onoff = value;
 					callback();	
@@ -154,7 +155,7 @@ module.exports = class extends Events  {
 
 		this.socket.on(deviceCapabilityID, (value) => {
 			onoff = value;
-			this.debug(`Updating ${this.name} onoff to ${onoff}.`);
+			this.debug(`Updating ${this.name}/${capabilityID} to ${value}.`);
 			characteristic.updateValue(onoff);
 		});
 	}

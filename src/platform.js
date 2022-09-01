@@ -11,6 +11,7 @@ module.exports = class Platform {
         this.log = log;
         this.homebridge = homebridge;
         this.debug = config.debug ? log : () => {};
+        this.debug = console.debug;
 
 		this.debug(`Connecting to socket ${this.config.socket}...`);
 		this.socket = io(this.config.socket);
