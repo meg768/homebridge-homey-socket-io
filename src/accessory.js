@@ -155,7 +155,7 @@ module.exports = class extends Events  {
 
 		this.socket.on(deviceCapabilityID, (value) => {
 			onoff = value;
-			this.debug(`Updating ${this.name}/${capabilityID} to ${value}.`);
+			this.debug(`Updating ${this.name}/${capabilityID} to ${value} (${deviceCapabilityID}).`);
 			characteristic.updateValue(onoff);
 		});
 	}
@@ -179,6 +179,7 @@ module.exports = class extends Events  {
 			});	
 		}
 
+        /*
 		if (capability.setable) {
 			characteristic.on('set', (value, callback) => {
 				this.socket.emit(deviceCapabilityID, value, () => {
@@ -187,6 +188,7 @@ module.exports = class extends Events  {
 				});
 			});	
 		}
+        */
 		
 		this.socket.on(deviceCapabilityID, (value) => {
 			this.debug(`Updating ${this.name} light level to ${value}.`);

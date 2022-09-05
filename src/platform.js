@@ -25,30 +25,55 @@ module.exports = class Platform {
 
 
 	createAccessories(devices) {
-		let Accessories = {
-			'socket': require('./accessories/socket.js'),
-			'light': require('./accessories/light.js'),
-			'tv': require('./accessories/tv.js'),
-			'sensor': require('./accessories/sensor.js')
-		}
 
+        let Socket =  require('./accessories/socket.js');
+        let Light = require('./accessories/light.js');
+        let TV = require('./accessories/tv.js');
+        let Sensor = require('./accessories/sensor.js');
+        let Switch = require('./accessories/switch.js');
+        
         let accessories = [];
 
 		this.debug(`Creating accessories...`);
 
 		for (let key in devices) {
-			let device = devices[key];
-			let Accessory = Accessories[device.class];
+            let device = devices[key];
 
 			if (this.config.exclude && this.config.exclude.indexOf(device.id) >= 0) {
 				this.debug(`Excluding device ${device.zoneName}/${device.name}.`);
 				continue;
 			}
+
+			let Accessory = undefined;
+
+            switch (device.class) {
+                case 'tv': {
+                    Accessory = TV; 
+                    break;
+                }
+                case 'socket': {
+                    Accessory = Socket;
+                    break;
+                }
+                case 'sensor': {
+                    Accessory = Sensor;
+                    break;
+                }
+                case 'light': {
+                    Accessory = Light;
+                    break;
+                }
+                default: {
+                    if (device.capabilitiesObj && device.capabilitiesObj.onoff) {
+                        Accessory = Switch;
+                    }
+                    break;
+                }
+            }
 			
 			if (Accessory != undefined) {
 				this.debug(`Adding device ${device.zoneName}/${device.name}.`);
 				accessories.push(new Accessory({device:device, platform:this}));
-
 			}
 	
 		}
@@ -71,6 +96,7 @@ module.exports = class Platform {
 				let {devices, zones} = payload;
 				this.debug(`Connected to socket. Found ${Object.entries(devices).length} devices.`);
 	
+                this.debug(JSON.stringify(devices, null, '  '));
 				this.devices = devices;
 				this.zones = zones;
 	
