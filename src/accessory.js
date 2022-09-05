@@ -132,7 +132,7 @@ module.exports = class extends Events  {
 
 		let characteristic = this.getService(service).getCharacteristic(Characteristic.On);
 		let deviceCapabilityID = `${this.device.id}/${capability.id}`;
-		let onoff = capability.value;
+		let onoff = capability.value ? true : false;
 
 		characteristic.updateValue(onoff);		
 
